@@ -88,8 +88,8 @@ def main(df):
     # Materialize the sparse data
     data_dense = data_vectorized.todense()
 
-    # Compute Sparsicity = Percentage of Non-Zero cells
-    print("Sparsicity: ", ((data_dense > 0).sum() / data_dense.size) * 100, "%")
+    # Compute Sparcity = Percentage of Non-Zero cells
+    print("Sparcity: ", ((data_dense > 0).sum() / data_dense.size) * 100, "%")
 
     # Build LDA Model
     lda_model = LatentDirichletAllocation(n_components=20,  # Number of topics
@@ -112,22 +112,63 @@ def main(df):
 
     # See model parameters
     pprint(lda_model.get_params())
+    # Create Document - Topic Matrix
+    lda_output = lda_model.transform(data_vectorized)
 
-    # df['Clean_Text'] = df.Text.apply(clean_tweet)
-    # print(df[['Text', 'Clean_Text']])
-    # # the vectorizer object will be used to transform text to vector form
-    # vectorizer = CountVectorizer(max_df=1.0, min_df=1, token_pattern='\w+|\$[\d\.]+|\S+')
-    # #vectorizer = CountVectorizer()
-    # # apply transformation
-    # tf = vectorizer.fit_transform(df['Clean_Text'])  # .toarray()
-    # # tf_feature_names tells us what word each column in the matric represents
-    # tf_feature_names = vectorizer.get_feature_names_out()
-    # print(tf.shape)
-    # from sklearn.decomposition import LatentDirichletAllocation
-    # number_of_topics = 10
-    # model = LatentDirichletAllocation(n_components=number_of_topics,
-    #                                   random_state=45)  # random state for reproducibility
-    # # Fit data to model
-    # model.fit(tf)
+    # column names
+    topicnames = ["Topic" + str(i) for i in range(lda_model.n_components)]
+
+    # index names
+    docnames = ["Doc" + str(i) for i in range(len(data))]
+
+    # Make the pandas dataframe
+    df_document_topic = pd.DataFrame(np.round(lda_output, 2), columns=topicnames, index=docnames)
+
+    # Get dominant topic for each document
+    dominant_topic = np.argmax(df_document_topic.values, axis=1)
+    df_document_topic['dominant_topic'] = dominant_topic
+
+    # # Styling
+    # def color_green(val):
+    #     color = 'green' if val > .1 else 'black'
+    #     return 'color: {col}'.format(col=color)
+    #
+    # def make_bold(val):
+    #     weight = 700 if val > .1 else 400
+    #     return 'font-weight: {weight}'.format(weight=weight)
+    #
+    # # Apply Style
+    # df_document_topics = df_document_topic.head(15).style.applymap(color_green).applymap(make_bold)
+    print(df_document_topic)
+    df_topic_distribution = df_document_topic['dominant_topic'].value_counts().reset_index(name="Num Documents")
+    df_topic_distribution.columns = ['Topic Num', 'Num Documents']
+    # print(df_topic_distribution)
+
+    # Topic-Keyword Matrix
+    df_topic_keywords = pd.DataFrame(lda_model.components_)
+
+    # Assign Column and Index
+    df_topic_keywords.columns = vectorizer.get_feature_names()
+    df_topic_keywords.index = topicnames
+
+    # View
+    print(df_topic_keywords.head())
+
+    # Show top n keywords for each topic
+    def show_topics(vectorizer=vectorizer, lda_model=lda_model, n_words=20):
+        keywords = np.array(vectorizer.get_feature_names())
+        topic_keywords = []
+        for topic_weights in lda_model.components_:
+            top_keyword_locs = (-topic_weights).argsort()[:n_words]
+            topic_keywords.append(keywords.take(top_keyword_locs))
+        return topic_keywords
+
+    topic_keywords = show_topics(vectorizer=vectorizer, lda_model=lda_model, n_words=15)
+
+    # Topic - Keywords Dataframe
+    df_topic_keywords = pd.DataFrame(topic_keywords)
+    df_topic_keywords.columns = ['Word ' + str(i) for i in range(df_topic_keywords.shape[1])]
+    df_topic_keywords.index = ['Topic ' + str(i) for i in range(df_topic_keywords.shape[0])]
+    print(df_topic_keywords)
 
 
