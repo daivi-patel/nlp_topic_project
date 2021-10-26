@@ -1,14 +1,15 @@
 import pandas
 import re
-import numpy as np
 import nltk
 
+# https://medium.com/@osas.usen/topic-extraction-from-tweets-using-lda-a997e4eb0985
 
 def remove_at(text):
     # A username can only contain alphanumeric characters (letters A-Z, numbers 0-9) with the exception of underscores,
     # as noted above. Check to make sure your desired username doesn't contain any symbols, dashes, or spaces.
-    pattern = r'@([A-Za-z0-9_])*'
+    pattern = r'@([A-Za-z0-9_])+'
     # Replace all occurrences of @username with an empty string
+    # https://towardsdatascience.com/topic-modeling-and-sentiment-analysis-on-twitter-data-using-spark-a145bfcc433
     text = re.sub(pattern, '', text)
     return text
 
@@ -44,14 +45,23 @@ def find_value_column(r):
     new_list = []
     for noun in r.Nouns:
         new_list.append(noun.lower().strip())
+    if r.Topic.lower().strip() in new_list:
+        return 'T'
+    else:
+        return 'F'
 
-    return r.Topic.lower().strip() in new_list
+    # return r.Topic.lower().strip() in new_list
 
 for row in df.loc[df.Nouns.isnull(), 'Nouns'].index:
     df.at[row, 'Nouns'] = []
 
 df['Acc'] = df.apply(find_value_column, axis=1)
 print(df)
-# print(df['Acc'].value_counts.True)
-# print(df['Acc'].describe())
 print(df.groupby('Acc').count())
+# Results: 241 False, 256 True
+# Not a very good indicator!
+# When we look at it, a lot of the failures come from ex: "Bobby Flay" not matching [Bobby, Flay, ...]
+# Need to consider n-grams
+check_false = df[df['Acc'] == 'F']
+check_false = check_false[['Topic', 'Nouns']]
+print(check_false)
