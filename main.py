@@ -1,5 +1,6 @@
 import noun_analysis
 import lda
+import data_metrics
 import re
 import pandas
 
@@ -24,10 +25,15 @@ def remove_at(text):
 
 
 df = pandas.read_csv('data/train_data.csv', encoding='latin-1')
+# train columns
 df.columns = ['Polarity', 'ID', 'Date', 'Query', 'User', 'Text']
+# test columns
 # df.columns = ['Polarity', 'ID', 'Date', 'Topic', 'User', 'Text']
 # print(df)
+print("Cleaning Data")
 df['Text'] = df['Text'].apply(remove_at)
+print("Done Cleaning Data")
 # print(df)
 # noun_analysis.main(df)
-lda.main(df.iloc[:10000])
+lda.main(df.iloc[:500])
+# data_metrics.main(df)

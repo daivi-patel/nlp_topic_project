@@ -44,14 +44,15 @@ def clean_tweet(tweet, bigrams=False):
 
 def sent_to_words(sentences):
     for sentence in sentences:
-        yield(gensim.utils.simple_preprocess(str(sentence), deacc=True))  # deacc=True removes punctuations
-
+        yield (gensim.utils.simple_preprocess(str(sentence), deacc=True))  # deacc=True removes punctuations
 
 
 def main(df):
+    print("Turning data into list")
     data = df.Text.values.tolist()
     # pprint(data[:1])
     data_words = list(sent_to_words(data))
+    print("Done turning data into list")
     # print(data_words)
     # Initialize spacy 'en' model, keeping only tagger component (for efficiency)
     # Run in terminal: python3 -m spacy download en
@@ -63,17 +64,18 @@ def main(df):
             allowed_postags = ['NOUN', 'ADJ', 'VERB', 'ADV']
         texts_out = []
         for sent in texts:
-            print(sent)
+            # print(sent)
             doc = nlp(" ".join(sent))
-            print(doc)
+            # print(doc)
             texts_out.append(" ".join([token.lemma_ if token.lemma_ not in ['-PRON-'] else '' for token in doc if
                                        token.pos_ in allowed_postags]))
         return texts_out
 
     # Do lemmatization keeping only Noun, Adj, Verb, Adverb
+    print("Lemmatizing")
     data_lemmatized = lemmatization(data_words, allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV'])
-
-    print(data_lemmatized)
+    print("Done lemmatizing")
+    # print(data_lemmatized)
 
     vectorizer = CountVectorizer(analyzer='word',
                                  min_df=10,  # minimum reqd occurences of a word
@@ -83,7 +85,9 @@ def main(df):
                                  # max_features=50000,             # max number of uniq words
                                  )
 
+    print("Vectorizing")
     data_vectorized = vectorizer.fit_transform(data_lemmatized)
+    print("Done vectorizing")
 
     # Materialize the sparse data
     data_dense = data_vectorized.todense()
@@ -102,7 +106,7 @@ def main(df):
                                           )
     lda_output = lda_model.fit_transform(data_vectorized)
 
-    print(lda_model)  # Model attributes
+    # print(lda_model)  # Model attributes
 
     # Log Likelyhood: Higher the better
     print("Log Likelihood: ", lda_model.score(data_vectorized))
@@ -110,6 +114,7 @@ def main(df):
     # Perplexity: Lower the better. Perplexity = exp(-1. * log-likelihood per word)
     print("Perplexity: ", lda_model.perplexity(data_vectorized))
 
+    print("Testing hyperparameters")
     # define search param
     search_params = {'n_components': [10, 15, 20, 25, 30], 'learning_decay': [.5, .7, .9]}
 
@@ -205,4 +210,20 @@ def main(df):
     df_topic_keywords.index = ['Topic ' + str(i) for i in range(df_topic_keywords.shape[0])]
     print(df_topic_keywords)
 
+    #50,000
+    # Best
+    # Model
+    # 's Params:  {'
+    # learning_decay
+    # ': 0.5, '
+    # n_components
+    # ': 10}
+    # Best
+    # Log
+    # Likelihood
+    # Score: 405095734
+    # Model
+    # Perplexity: 1106.74381814062
+
+    #10000
 
