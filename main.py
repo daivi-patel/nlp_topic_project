@@ -19,15 +19,15 @@ def remove_at(text):
     pattern = r'#([A-Za-z]+[A-Za-z0-9-_]+)'
     # replace all hashtags with empty string
     text = re.sub(pattern, '', text)
+    # print(text)
     return text
 
 
-df = pandas.read_csv('data/test_data.csv', encoding='latin-1')
-# df.columns = ['Polarity', 'ID', 'Date', 'Query', 'User', 'Text']
-df.columns = ['Polarity', 'ID', 'Date', 'Topic', 'User', 'Text']
+df = pandas.read_csv('data/train_data.csv', encoding='latin-1')
+df.columns = ['Polarity', 'ID', 'Date', 'Query', 'User', 'Text']
+# df.columns = ['Polarity', 'ID', 'Date', 'Topic', 'User', 'Text']
 # print(df)
 df['Text'] = df['Text'].apply(remove_at)
 # print(df)
-
 # noun_analysis.main(df)
-lda.main(df)
+lda.main(df.iloc[:10000])

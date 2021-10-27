@@ -110,13 +110,47 @@ def main(df):
     # Perplexity: Lower the better. Perplexity = exp(-1. * log-likelihood per word)
     print("Perplexity: ", lda_model.perplexity(data_vectorized))
 
+    # define search param
+    search_params = {'n_components': [10, 15, 20, 25, 30], 'learning_decay': [.5, .7, .9]}
+
+    # Init the Model
+    lda = LatentDirichletAllocation()
+
+    # Init Grid Search Class
+    model = GridSearchCV(lda, param_grid=search_params)
+
+    # Do the Grid Search
+    model.fit(data_vectorized)
+    GridSearchCV(cv=None, error_score='raise',
+                 estimator=LatentDirichletAllocation(batch_size=128, doc_topic_prior=None,
+                                                     evaluate_every=-1, learning_decay=0.7, learning_method=None,
+                                                     learning_offset=10.0, max_doc_update_iter=100, max_iter=10,
+                                                     mean_change_tol=0.001, n_components=10, n_jobs=1,
+                                                     perp_tol=0.1, random_state=None,
+                                                     topic_word_prior=None, total_samples=1000000.0, verbose=0),
+                 n_jobs=1,
+                 param_grid={'n_topics': [10, 15, 20, 25, 30], 'learning_decay': [0.5, 0.7, 0.9]},
+                 pre_dispatch='2*n_jobs', refit=True, return_train_score='warn',
+                 scoring=None, verbose=0)
+    # Best Model
+    best_lda_model = model.best_estimator_
+
+    # Model Parameters
+    print("Best Model's Params: ", model.best_params_)
+
+    # Log Likelihood Score
+    print("Best Log Likelihood Score: ", model.best_score_)
+
+    # Perplexity
+    print("Model Perplexity: ", best_lda_model.perplexity(data_vectorized))
+
     # See model parameters
     pprint(lda_model.get_params())
     # Create Document - Topic Matrix
-    lda_output = lda_model.transform(data_vectorized)
+    lda_output = best_lda_model.transform(data_vectorized)
 
     # column names
-    topicnames = ["Topic" + str(i) for i in range(lda_model.n_components)]
+    topicnames = ["Topic" + str(i) for i in range(best_lda_model.n_components)]
 
     # index names
     docnames = ["Doc" + str(i) for i in range(len(data))]
@@ -145,7 +179,7 @@ def main(df):
     # print(df_topic_distribution)
 
     # Topic-Keyword Matrix
-    df_topic_keywords = pd.DataFrame(lda_model.components_)
+    df_topic_keywords = pd.DataFrame(best_lda_model.components_)
 
     # Assign Column and Index
     df_topic_keywords.columns = vectorizer.get_feature_names()
@@ -163,7 +197,7 @@ def main(df):
             topic_keywords.append(keywords.take(top_keyword_locs))
         return topic_keywords
 
-    topic_keywords = show_topics(vectorizer=vectorizer, lda_model=lda_model, n_words=15)
+    topic_keywords = show_topics(vectorizer=vectorizer, lda_model=best_lda_model, n_words=15)
 
     # Topic - Keywords Dataframe
     df_topic_keywords = pd.DataFrame(topic_keywords)
