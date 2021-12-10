@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 import noun_analysis
 import lda
 import lsa
+=======
+>>>>>>> 54329ce09ba6433be44eea410bf972e71dceb436
 import data_metrics
+import lda
 import re
 import pandas
+
+import noun_analysis
 
 
 def remove_at(text):
@@ -25,13 +31,15 @@ def remove_at(text):
     return text
 
 
-df = pandas.read_csv('data/train_data.csv', encoding='latin-1')
+train_df = pandas.read_csv('data/train_data.csv', encoding='latin-1')
+test_df = pandas.read_csv('data/test_data.csv', encoding='latin-1')
 # train columns
-df.columns = ['Polarity', 'ID', 'Date', 'Query', 'User', 'Text']
+train_df.columns = ['Polarity', 'ID', 'Date', 'Query', 'User', 'Text']
 # test columns
-# df.columns = ['Polarity', 'ID', 'Date', 'Topic', 'User', 'Text']
+test_df.columns = ['Polarity', 'ID', 'Date', 'Topic', 'User', 'Text']
 # print(df)
 print("Cleaning Data")
+<<<<<<< HEAD
 df['Text'] = df['Text'].apply(remove_at)
 # print(df['Text'])
 print("Done Cleaning Data")
@@ -40,3 +48,11 @@ print("Done Cleaning Data")
 # lda.main(df.iloc[:500])
 lsa.main(df.iloc[:500])
 # data_metrics.main(df)
+=======
+test_df['Text'] = test_df['Text'].apply(remove_at)
+print("Done Cleaning Data")
+
+# noun_analysis.main(test_df)
+lda.main(test_df.iloc[:500])
+# data_metrics.main(test_df)
+>>>>>>> 54329ce09ba6433be44eea410bf972e71dceb436
