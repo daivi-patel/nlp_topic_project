@@ -1,4 +1,3 @@
-import noun_analysis
 import lsa
 import data_metrics
 import lda
@@ -36,19 +35,14 @@ test_df.columns = ['Polarity', 'ID', 'Date', 'Topic', 'User', 'Text']
 # print(df)
 print("Cleaning Data")
 
-df['Text'] = df['Text'].apply(remove_at)
-# print(df['Text'])
-print("Done Cleaning Data")
-# print(df)
-# noun_analysis.main(df)
-# lda.main(df.iloc[:500])
-lsa.main(df.iloc[:500])
-# data_metrics.main(df)
-
 test_df['Text'] = test_df['Text'].apply(remove_at)
+# print(test_df['Text'])
 print("Done Cleaning Data")
-
-# noun_analysis.main(test_df)
+# print(test_df)
+noun_analysis.main(test_df)
 lda.main(test_df.iloc[:500])
-# data_metrics.main(test_df)
+lsa.main(test_df.iloc[:500])
+data_metrics.main(test_df)
+
+print("Done Cleaning Data")
 
