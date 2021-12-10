@@ -32,6 +32,7 @@ def find_value_column(r):
 
 
 def main(df):
+    print("Running Noun Analysis")
     df['POS'] = df['Text'].apply(tag_pos)
     df['Nouns'] = df['POS'].apply(nouns)
     for row in df.loc[df.Nouns.isnull(), 'Nouns'].index:
