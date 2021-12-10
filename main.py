@@ -1,5 +1,6 @@
 import noun_analysis
 import lda
+import lsa
 import data_metrics
 import re
 import pandas
@@ -32,8 +33,10 @@ df.columns = ['Polarity', 'ID', 'Date', 'Query', 'User', 'Text']
 # print(df)
 print("Cleaning Data")
 df['Text'] = df['Text'].apply(remove_at)
+# print(df['Text'])
 print("Done Cleaning Data")
 # print(df)
 # noun_analysis.main(df)
-lda.main(df.iloc[:500])
+# lda.main(df.iloc[:500])
+lsa.main(df.iloc[:500])
 # data_metrics.main(df)
